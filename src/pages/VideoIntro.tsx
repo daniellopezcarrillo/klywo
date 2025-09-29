@@ -5,7 +5,7 @@ const VideoIntro = () => {
 
   const handleStartClick = () => {
     sessionStorage.setItem('introPassed', '1');
-    navigate('/auth');
+    navigate('/landing');
   };
 
   return (
@@ -41,7 +41,7 @@ const VideoIntro = () => {
 
           {/* Carousel Text */}
           <div className="mt-8 animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <p className="text-xl md:text-2xl text-white/90 font-light">
+            <p className="text-xl md:text-2xl text-white/90 font-light">  
               Tus chats en un solo lugar
             </p>
           </div>

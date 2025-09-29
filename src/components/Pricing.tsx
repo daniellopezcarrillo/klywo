@@ -3,13 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from "../lib/supabaseClient";
 import { loadStripe } from '@stripe/stripe-js';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
-
-// Get Supabase URL and Anon Key from environment variables
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 // Get Stripe public key from environment variables
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
@@ -18,55 +15,52 @@ const Pricing = () => {
   const [isAnnual, setIsAnnual] = useState(false);
   const stripe = useStripe();
   const elements = useElements();
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // Use constants
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const priceIdFromUrl = searchParams.get('priceId');
 
   const [userId, setUserId] = useState<string | null>(null);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [clientSecretInfo, setClientSecretInfo] = useState<{ plan: string; secret: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle');
 
   useEffect(() => {
     const getUser = async () => {
-      // Ensure supabase is initialized before proceeding
-      if (!supabase) {
-        console.error("Supabase client is not initialized.");
-        return;
-      }
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
-        console.log("User ID:", user.id);
       } else {
         console.log("User not logged in.");
       }
     };
     getUser();
-  }, [supabase]);
+  }, []);
 
-  // Log stripe status for debugging
   useEffect(() => {
-    console.log("Stripe instance:", stripe);
-    if (!stripe) {
-      console.error("Stripe instance is not available.");
+    if (priceIdFromUrl && userId) {
+      const plan = plans.find(p => p.priceIdMonthly === priceIdFromUrl || p.priceIdAnnual === priceIdFromUrl);
+      if (plan) {
+        handleGetStarted(plan.name, priceIdFromUrl);
+      }
     }
-  }, [stripe]);
+  }, [priceIdFromUrl, userId]);
 
   const plans = [
     {
-      name: "Starter", description: "Perfecto para equipos pequeños", monthlyPrice: 29, annualPrice: 25,
-      priceIdMonthly: "price_1S5dE7KVlNZMOTjrVmGIKMNs", priceIdAnnual: "price_1S5dE7KVlNZMOTjrVmGIKMNs",
+      name: "Starter", description: "Perfecto para equipos pequeños", monthlyPrice: 19, annualPrice: 19,
+      priceIdMonthly: "price_1SCFZS48rdWD5n1ODDiKPiY8", priceIdAnnual: "price_1SCFZS48rdWD5n1ODDiKPiY8",
       features: ["Hasta 3 agentes", "2 canales (Web chat + Email)", "Automatizaciones básicas", "Reportes estándar", "Soporte por email"],
       limitations: ["Sin IA avanzada", "Sin integraciones premium"], popular: false,
     },
     {
-      name: "Growth", description: "Para equipos en crecimiento", monthlyPrice: 79, annualPrice: 65,
-      priceIdMonthly: "price_1S5dW7KVlNZMOTjrbO5ATqlQ", priceIdAnnual: "price_1S5dW7KVlNZMOTjrbO5ATqlQ",
+      name: "Growth", description: "Para equipos en crecimiento", monthlyPrice: 39, annualPrice: 39,
+      priceIdMonthly: "price_1SCFTa48rdWD5n1O0y8NHoUL", priceIdAnnual: "price_1SCFTa48rdWD5n1O0y8NHoUL",
       features: ["Hasta 10 agentes", "Todos los canales", "IA y automatizaciones avanzadas", "Analytics completo", "Integraciones ilimitadas", "Soporte prioritario"],
       limitations: [], popular: true,
     },
     {
-      name: "Scale", description: "Para empresas grandes", monthlyPrice: 149, annualPrice: 125,
-      priceIdMonthly: "price_1S5deiKVlNZMOTjrNAP1Owf3", priceIdAnnual: "price_1S5diCKVlNZMOTjryznY2gAf",
+      name: "Scale", description: "Para empresas grandes", monthlyPrice: 99, annualPrice: 99,
+      priceIdMonthly: "price_1SCFa048rdWD5n1OMUWPd514", priceIdAnnual: "price_1SCFa048rdWD5n1OMUWPd514",
       features: ["Agentes ilimitados", "Todos los canales + custom", "IA personalizada", "Reportes avanzados", "White-label disponible", "Soporte dedicado", "SLA garantizado"],
       limitations: [], popular: false,
     },
@@ -78,54 +72,44 @@ const Pricing = () => {
   };
 
   const handleGetStarted = async (planName: string, priceId: string) => {
-    // Ensure user is logged in
     if (!userId) {
-      console.error("User not logged in. Cannot proceed with checkout.");
-      // Consider using a more user-friendly way to inform the user, e.g., a toast notification
-      alert("Por favor, inicia sesión para continuar.");
+      console.error("User not logged in. Redirecting to auth page.");
+      navigate(`/auth?priceId=${priceId}`);
       return;
     }
 
-    // Ensure Stripe is initialized
     if (!stripe) {
       console.error("Stripe instance is not available.");
-      alert("Stripe no está inicializado correctamente. Por favor, intenta de nuevo más tarde.");
+      alert("Stripe no está inicializado. Por favor, intenta de nuevo.");
       return;
     }
 
     setLoading(true);
+    setPaymentStatus('idle');
+    setClientSecretInfo(null);
 
     try {
-      // Create Stripe customer if not already exists (assuming backend handles this)
-      const customerResponse = await fetch('https://gvxljxkmlckefbbjenwq.supabase.co/functions/createStripeCustomer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
+      const { data: customerData, error: customerError } = await supabase.functions.invoke('createStripeCustomer', {
+        body: { userId },
       });
-      const customerData = await customerResponse.json();
 
-      if (!customerData.stripeCustomerId) {
-        throw new Error('No se pudo obtener el ID de cliente de Stripe.');
+      if (customerError || !customerData.stripeCustomerId) {
+        throw new Error('No se pudo crear o verificar el cliente de Stripe. Revisa los logs de la función `createStripeCustomer`.');
       }
 
-      // Create subscription
-      const subscriptionResponse = await fetch('https://gvxljxkmlckefbbjenwq.supabase.co/functions/createSubscription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: userId, priceId: priceId }),
+      const { data: subscriptionData, error: subscriptionError } = await supabase.functions.invoke('createSubscription', {
+        body: { userId: userId, priceId: priceId },
       });
-      const subscriptionData = await subscriptionResponse.json();
 
-      if (!subscriptionData.clientSecret) {
-        throw new Error('No se pudo crear la suscripción.');
+      if (subscriptionError || !subscriptionData.clientSecret) {
+        throw new Error('No se pudo crear la suscripción. Revisa los logs de la función `createSubscription`.');
       }
 
-      setClientSecret(subscriptionData.clientSecret);
+      setClientSecretInfo({ plan: planName, secret: subscriptionData.clientSecret });
 
     } catch (error) {
       console.error('Error during checkout initiation:', error);
-      // Replace alert with a more integrated UI feedback mechanism if possible
-      alert('Error durante el proceso de pago: ' + error.message);
+      alert(`Error: ${(error as Error).message}`);
     } finally {
       setLoading(false);
     }
@@ -134,14 +118,15 @@ const Pricing = () => {
   const handlePaymentSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!stripe || !elements || !clientSecret) {
+    if (!stripe || !elements || !clientSecretInfo) {
       alert("Stripe no está inicializado o falta el client secret.");
       return;
     }
 
     setLoading(true);
+    setPaymentStatus('processing');
 
-    const { error } = await stripe.confirmCardPayment(clientSecret, {
+    const { error } = await stripe.confirmCardPayment(clientSecretInfo.secret, {
       payment_method: {
         card: elements.getElement(CardElement)!,
       },
@@ -150,10 +135,10 @@ const Pricing = () => {
     if (error) {
       console.error('Payment confirmation error:', error);
       setPaymentStatus('failed');
-      alert(error.message); // Keep alert for now, but ideally update UI
+      alert(error.message ?? "Ocurrió un error desconocido durante el pago.");
     } else {
       setPaymentStatus('success');
-      // Optionally, redirect user or update UI
+      setClientSecretInfo(null); // Clear secret after success
     }
 
     setLoading(false);
@@ -173,7 +158,6 @@ const Pricing = () => {
             Comienza gratis. Escala cuando necesites. Sin sorpresas.
           </p>
 
-          {/* Billing Toggle */}
           <div className="flex items-center justify-center space-x-4 mb-12">
             <span className={`text-sm ${!isAnnual ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
               Mensual
@@ -231,28 +215,26 @@ const Pricing = () => {
                     variant={plan.popular ? "default" : "outline"} 
                     className="w-full"
                     size="lg"
-                    onClick={() => handleGetStarted(plan.name, priceId)} // Call handleGetStarted
-                    disabled={loading || !userId || !stripe || ['success', 'processing'].includes(paymentStatus)} // Disable button if loading, no user, stripe not ready, or payment is processing/successful
+                    onClick={() => handleGetStarted(plan.name, priceId)}
+                    disabled={loading || !stripe}
                   >
-                    {loading ? "Processing..." : (plan.name === "Starter" ? "Start Free Trial" : "Get Started")}
+                    {loading && clientSecretInfo?.plan !== plan.name ? "Cargando..." : "Get Started"}
                   </Button>
                   
-                  {/* Conditionally render Stripe Elements form if clientSecret is available */}
-                  {clientSecret && userId && paymentStatus === 'idle' && ( // Only show form if clientSecret is available and payment status is idle
+                  {clientSecretInfo?.plan === plan.name && paymentStatus !== 'success' && (
                     <form onSubmit={handlePaymentSubmit}>
-                      <CardElement />
-                      <Button type="submit" className="w-full mt-4" disabled={!stripe || loading}>
-                        {loading ? "Confirming Payment..." : "Confirm Payment"}
+                      <CardElement className="p-3 border rounded-md bg-background" />
+                      <Button type="submit" className="w-full mt-4" disabled={!stripe || loading || paymentStatus === 'processing'}>
+                        {paymentStatus === 'processing' ? "Confirmando Pago..." : "Pagar Ahora"}
                       </Button>
                     </form>
                   )}
 
-                  {/* Display payment status message */}
-                  {paymentStatus === 'success' && (
-                    <div className="text-center text-green-500">Suscripción exitosa!</div>
+                  {paymentStatus === 'success' && clientSecretInfo?.plan === plan.name && (
+                    <div className="text-center text-green-500 font-medium">¡Suscripción exitosa!</div>
                   )}
-                  {paymentStatus === 'failed' && (
-                    <div className="text-center text-red-500">Fallo en el pago. Intenta de nuevo.</div>
+                  {paymentStatus === 'failed' && clientSecretInfo?.plan === plan.name && (
+                    <div className="text-center text-red-500 font-medium">Fallo en el pago. Por favor, intenta de nuevo.</div>
                   )}
                   
                   <ul className="space-y-3 text-sm">

@@ -34,3 +34,35 @@ Este documento detalla las tareas necesarias para integrar Stripe con Supabase p
     *   [x] Probar el flujo de pago completo en el modo de prueba de Stripe.
     *   [x] Desplegar las Supabase Functions.
     *   [x] Desplegar la aplicación frontend.
+
+## Nuevas Tareas
+
+### Flujo de Autenticación
+
+*   [ ] **Redirección desde Precios:** Al hacer clic en un plan de precios, redirigir al usuario a la página de registro/inicio de sesión.
+*   [ ] **Formulario de Registro:**
+    *   [ ] Añadir campos para "Nombre completo" y "Nombre de la empresa".
+    *   [ ] Implementar la opción de registro con Google.
+    *   [ ] Añadir un enlace a la página de inicio de sesión para usuarios existentes.
+*   [ ] **Redirección Post-Autenticación:** Después de un registro o inicio de sesión exitoso, redirigir al usuario a la página de pago.
+
+### Flujo de Pago y Post-Pago
+
+*   [ ] **Notificación de Pago Exitoso:** Mostrar una notificación con el nombre del usuario después de un pago exitoso.
+*   [ ] **Acceso a la Aplicación:** Otorgar acceso a la aplicación automáticamente después del pago.
+
+### Base de Datos y Estructura de Datos
+
+*   [ ] **Actualizar Perfil de Usuario:** Añadir `full_name` y `company_name` a los datos del perfil del usuario en la base de datos.
+*   [ ] **Vincular Pagos a Usuarios:** Asegurarse de que la tabla de pagos esté vinculada a la identidad del usuario.
+
+### Integración de Webhook
+
+*   [ ] **Enviar Datos a n8n:** Después de un pago procesado, enviar los datos a un webhook de n8n.
+*   [ ] **Variables Importantes para Webhook:**
+    *   `customer_name`
+    *   `customer_email`
+    *   `company_name`
+    *   `plan_selected`
+    *   `payment_status`
+    *   `invoice_id`
