@@ -57,7 +57,7 @@ const Integrations = () => {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
             Stack{" "}
-            <span className="bg-gradient-brand bg-clip-text text-transparent">
+            <span className="text-primary">
               flexible
             </span>
           </h2>

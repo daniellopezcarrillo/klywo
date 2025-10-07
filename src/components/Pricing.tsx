@@ -2,48 +2,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, X } from "lucide-react";
-import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabaseClient";
-import { loadStripe } from '@stripe/stripe-js';
-import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import { useState } from "react";
 import { useNavigate, useSearchParams } from 'react-router-dom';
-
-// Get Stripe public key from environment variables
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+import '../styles/auth-flow.css';
 
 const Pricing = () => {
   const [isAnnual, setIsAnnual] = useState(false);
-  const stripe = useStripe();
-  const elements = useElements();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const priceIdFromUrl = searchParams.get('priceId');
-
-  const [userId, setUserId] = useState<string | null>(null);
-  const [clientSecretInfo, setClientSecretInfo] = useState<{ plan: string; secret: string } | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle');
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-      } else {
-        console.log("User not logged in.");
-      }
-    };
-    getUser();
-  }, []);
-
-  useEffect(() => {
-    if (priceIdFromUrl && userId) {
-      const plan = plans.find(p => p.priceIdMonthly === priceIdFromUrl || p.priceIdAnnual === priceIdFromUrl);
-      if (plan) {
-        handleGetStarted(plan.name, priceIdFromUrl);
-      }
-    }
-  }, [priceIdFromUrl, userId]);
 
   const plans = [
     {
@@ -71,77 +38,9 @@ const Pricing = () => {
     return { price, period: isAnnual ? "/año" : "/mes" };
   };
 
-  const handleGetStarted = async (planName: string, priceId: string) => {
-    if (!userId) {
-      console.error("User not logged in. Redirecting to auth page.");
-      navigate(`/auth?priceId=${priceId}`);
-      return;
-    }
-
-    if (!stripe) {
-      console.error("Stripe instance is not available.");
-      alert("Stripe no está inicializado. Por favor, intenta de nuevo.");
-      return;
-    }
-
-    setLoading(true);
-    setPaymentStatus('idle');
-    setClientSecretInfo(null);
-
-    try {
-      const { data: customerData, error: customerError } = await supabase.functions.invoke('createStripeCustomer', {
-        body: { userId },
-      });
-
-      if (customerError || !customerData.stripeCustomerId) {
-        throw new Error('No se pudo crear o verificar el cliente de Stripe. Revisa los logs de la función `createStripeCustomer`.');
-      }
-
-      const { data: subscriptionData, error: subscriptionError } = await supabase.functions.invoke('createSubscription', {
-        body: { userId: userId, priceId: priceId },
-      });
-
-      if (subscriptionError || !subscriptionData.clientSecret) {
-        throw new Error('No se pudo crear la suscripción. Revisa los logs de la función `createSubscription`.');
-      }
-
-      setClientSecretInfo({ plan: planName, secret: subscriptionData.clientSecret });
-
-    } catch (error) {
-      console.error('Error during checkout initiation:', error);
-      alert(`Error: ${(error as Error).message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePaymentSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!stripe || !elements || !clientSecretInfo) {
-      alert("Stripe no está inicializado o falta el client secret.");
-      return;
-    }
-
-    setLoading(true);
-    setPaymentStatus('processing');
-
-    const { error } = await stripe.confirmCardPayment(clientSecretInfo.secret, {
-      payment_method: {
-        card: elements.getElement(CardElement)!,
-      },
-    });
-
-    if (error) {
-      console.error('Payment confirmation error:', error);
-      setPaymentStatus('failed');
-      alert(error.message ?? "Ocurrió un error desconocido durante el pago.");
-    } else {
-      setPaymentStatus('success');
-      setClientSecretInfo(null); // Clear secret after success
-    }
-
-    setLoading(false);
+  const handleGetStarted = (planName: string, priceId: string) => {
+    console.log("Redirigiendo a autenticación para el plan:", planName);
+    navigate(`/auth?priceId=${priceId}&plan=${planName}`);
   };
 
   return (
@@ -211,31 +110,20 @@ const Pricing = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <Button 
-                    variant={plan.popular ? "default" : "outline"} 
-                    className="w-full"
+                  <Button
+                    variant={plan.popular ? "default" : "outline"}
+                    className="w-full group relative overflow-hidden hover:shadow-brand hover:scale-105 transition-all duration-200"
                     size="lg"
                     onClick={() => handleGetStarted(plan.name, priceId)}
-                    disabled={loading || !stripe}
                   >
-                    {loading && clientSecretInfo?.plan !== plan.name ? "Cargando..." : "Get Started"}
+                    <span className="relative z-10 flex items-center justify-center gap-2">
+                      Empezar
+                      <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                   </Button>
-                  
-                  {clientSecretInfo?.plan === plan.name && paymentStatus !== 'success' && (
-                    <form onSubmit={handlePaymentSubmit}>
-                      <CardElement className="p-3 border rounded-md bg-background" />
-                      <Button type="submit" className="w-full mt-4" disabled={!stripe || loading || paymentStatus === 'processing'}>
-                        {paymentStatus === 'processing' ? "Confirmando Pago..." : "Pagar Ahora"}
-                      </Button>
-                    </form>
-                  )}
-
-                  {paymentStatus === 'success' && clientSecretInfo?.plan === plan.name && (
-                    <div className="text-center text-green-500 font-medium">¡Suscripción exitosa!</div>
-                  )}
-                  {paymentStatus === 'failed' && clientSecretInfo?.plan === plan.name && (
-                    <div className="text-center text-red-500 font-medium">Fallo en el pago. Por favor, intenta de nuevo.</div>
-                  )}
                   
                   <ul className="space-y-3 text-sm">
                     {plan.features.map((feature, i) => (

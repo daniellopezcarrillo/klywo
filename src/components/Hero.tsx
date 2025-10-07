@@ -21,7 +21,7 @@ const Hero = () => {
           {/* Main Headline */}
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
             Conversaciones que{" "}
-            <span className="bg-gradient-brand bg-clip-text text-transparent">
+            <span className="text-primary">
               venden
             </span>
           </h1>

@@ -238,3 +238,65 @@
 .animate-carousel-scroll {
   animation: carouselScroll 30s linear infinite;
 }
+
+/* Animaciones para el componente de transición de autenticación */
+@keyframes progress {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes confetti {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes ping-scale {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.animate-progress {
+  animation: progress 2s ease-out forwards;
+}
+
+.animate-confetti {
+  animation: confetti 1.5s ease-out forwards;
+}
+
+.animate-ping-scale {
+  animation: ping-scale 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Clases de utilidad adicionales para el flujo de autenticación */
+
+
+.text-gradient-brand {
+  background: linear-gradient(135deg, hsl(175 100% 42%), hsl(195 100% 45%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.shadow-brand {
+  box-shadow: 0 8px 25px -8px hsl(175 100% 42% / 0.3);
+}
+
+.hover\:shadow-brand:hover {
+  box-shadow: 0 8px 25px -8px hsl(175 100% 42% / 0.4);
+}

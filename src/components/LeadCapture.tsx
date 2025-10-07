@@ -71,7 +71,7 @@ const LeadCapture = () => {
           <div>
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
               Descubre el poder de{" "}
-              <span className="bg-gradient-brand bg-clip-text text-transparent">
+              <span className="text-primary">
                 Klywo
               </span>
             </h2>

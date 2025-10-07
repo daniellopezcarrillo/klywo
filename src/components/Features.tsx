@@ -124,7 +124,7 @@ const Features = () => {
         <div className="text-center mb-16">
           <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
             Automatizaciones{" "}
-            <span className="bg-gradient-brand bg-clip-text text-transparent">
+            <span className="text-primary">
               inteligentes
             </span>
           </h3>

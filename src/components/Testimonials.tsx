@@ -111,7 +111,7 @@ const Testimonials = () => {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
             Lo que dicen{" "}
-            <span className="bg-gradient-brand bg-clip-text text-transparent">
+            <span className="text-primary">
               nuestros clientes
             </span>
           </h2>
