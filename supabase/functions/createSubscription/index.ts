@@ -42,7 +42,7 @@ serve(async (req) => {
   try {
     let customerId;
 
-    // 1. Get or Create Customer - Logic corrected to use user_subscriptions table
+    // 1. Get Customer ID from DB
     const { data: existingSubscription } = await supabase
       .from("user_subscriptions")
       .select("stripe_customer_id")
@@ -50,9 +50,24 @@ serve(async (req) => {
       .single();
 
     if (existingSubscription && existingSubscription.stripe_customer_id) {
-      customerId = existingSubscription.stripe_customer_id;
-      await stripe.customers.update(customerId, { name, email, phone, address: { line1: address } });
-    } else {
+      // 2. Verify customer ID with Stripe
+      try {
+        const customer = await stripe.customers.retrieve(existingSubscription.stripe_customer_id);
+        // If customer is not deleted, use it
+        if (!customer.deleted) {
+            customerId = existingSubscription.stripe_customer_id;
+            // Optional: Update customer details if they've changed
+            await stripe.customers.update(customerId, { name, email, phone, address: { line1: address } });
+        }
+      } catch (error) {
+        // Customer not found in current Stripe environment (e.g., test vs. live),
+        // proceed to create a new one.
+        console.warn(`Could not retrieve customer ${existingSubscription.stripe_customer_id}, creating a new one. Error: ${error.message}`);
+      }
+    }
+
+    // 3. If no valid customerId yet, create or find one
+    if (!customerId) {
       const customers = await stripe.customers.list({ email: email, limit: 1 });
       if (customers.data.length > 0) {
         customerId = customers.data[0].id;
