@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, CreditCard, Loader2, AlertCircle } from "lucide-react";
+import { CreditCard, Loader2, AlertCircle } from "lucide-react";
 import SandglassTransition from './SandglassTransition';
 import '../styles/auth-flow.css';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import { useNavigate } from 'react-router-dom';
 
 interface PaymentProcessorProps {
   userData?: any;
@@ -41,8 +42,14 @@ const PaymentForm = ({
   const [processing, setProcessing] = useState(false);
   const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'failed' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [email, setEmail] = useState('');
   const stripe = useStripe();
   const elements = useElements();
+  const navigate = useNavigate();
 
   const urlParams = new URLSearchParams(window.location.search);
   const urlPriceId = urlParams.get('priceId');
@@ -52,6 +59,16 @@ const PaymentForm = ({
   const finalPlanName = planName || urlPlanName;
 
   const [showSuccessTransition, setShowSuccessTransition] = useState(false);
+
+  const handleTransitionComplete = () => {
+    navigate('/post-payment-info', { 
+      state: { 
+        email: userEmail,
+        planName: finalPlanName,
+        priceId: finalPriceId
+      }
+    });
+  };
 
   const processPayment = async () => {
     if (!stripe || !elements) {
@@ -82,6 +99,7 @@ const PaymentForm = ({
         setProcessing(false);
         return;
       }
+      setUserEmail(session.user.email || '');
       const jwt = session.access_token;
 
       const response = await fetch('https://gvxljxkmlckefbbjenwq.supabase.co/functions/v1/createSubscription', {
@@ -93,7 +111,11 @@ const PaymentForm = ({
         },
         body: JSON.stringify({
           userId: session.user.id,
-          priceId: finalPriceId
+          priceId: finalPriceId,
+          name,
+          email: email || session.user.email,
+          phone,
+          address
         }),
       });
 
@@ -103,9 +125,15 @@ const PaymentForm = ({
         throw new Error(functionError);
       }
 
-      const { error: paymentError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      const { error: paymentError } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: cardElement,
+          billing_details: {
+            name: name,
+            email: email || session.user.email,
+            phone: phone,
+            address: address,
+          },
         },
       });
 
@@ -118,7 +146,6 @@ const PaymentForm = ({
         if (onSuccess) {
           onSuccess();
         }
-        // You can call your webhook here if needed
       }
     } catch (err: any) {
       console.error('Error en procesamiento de pago:', err);
@@ -134,7 +161,7 @@ const PaymentForm = ({
       case 'processing':
         return 'Procesando tu pago...';
       case 'success':
-        return '¡Pago exitoso!';
+        return '¡Pago exitoso! Redirigiendo...';
       case 'failed':
         return 'Pago rechazado';
       case 'error':
@@ -142,25 +169,6 @@ const PaymentForm = ({
       default:
         return 'Completa tus datos de pago';
     }
-  };
-
-  const getStatusSubMessage = () => {
-    switch (status) {
-      case 'processing':
-        return 'Validando tus datos con el banco...';
-      case 'success':
-        return 'Preparando tu cuenta...';
-      case 'failed':
-        return 'Por favor intenta con otro método de pago';
-      case 'error':
-        return 'Ha ocurrido un error, por favor intenta de nuevo';
-      default:
-        return 'Ingresa los datos de tu tarjeta para continuar';
-    }
-  };
-
-  const handleTransitionComplete = () => {
-    window.location.href = 'https://app.klywo.com/app/login';
   };
 
   return (
@@ -184,7 +192,35 @@ const PaymentForm = ({
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-6">
-            <div className="p-4 border rounded-lg">
+            <div className="p-4 border rounded-lg space-y-4">
+              <input
+                type="text"
+                placeholder="Nombre Completo"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="email"
+                placeholder="Correo Electrónico"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="tel"
+                placeholder="Teléfono"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="text"
+                placeholder="Dirección"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full p-2 border rounded"
+              />
               <CardElement options={CARD_ELEMENT_OPTIONS} />
             </div>
             <Button
@@ -214,32 +250,11 @@ const PaymentForm = ({
               </div>
             </div>
           )}
-          {status === 'success' && !showSuccessTransition && (
-            <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <h3 className="text-lg font-semibold text-green-800 mb-2">
-                  ¡Pago exitoso!
-                </h3>
-                <p className="text-sm text-green-700">
-                  Tu cuenta está siendo preparada. Serás redirigido a la aplicación en unos segundos.
-                </p>
-              </div>
-              <Button
-                onClick={() => {
-                  window.location.href = 'https://app.klywo.com/app/login';
-                }}
-                className="w-full bg-gradient-brand hover:shadow-brand hover:scale-105 transition-all duration-200 btn-hover-effect"
-              >
-                Iniciar Sesión
-              </Button>
-            </div>
-          )}
         </CardContent>
       </Card>
       <SandglassTransition
         isVisible={showSuccessTransition}
-        message="Estamos creando tu cuenta..."
+        message="Estamos procesando tu pago..."
         subMessage="Serás redirigido en unos segundos..."
         onComplete={handleTransitionComplete}
       />

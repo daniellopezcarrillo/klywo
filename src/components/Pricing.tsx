@@ -6,7 +6,11 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import '../styles/auth-flow.css';
 
-const Pricing = () => {
+interface PricingProps {
+  onStartFreeTrial: () => void;
+}
+
+const Pricing = ({ onStartFreeTrial }: PricingProps) => {
   const [isAnnual, setIsAnnual] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -14,20 +18,20 @@ const Pricing = () => {
 
   const plans = [
     {
-      name: "Starter", description: "Perfecto para equipos pequeños", monthlyPrice: 19, annualPrice: 19,
-      priceIdMonthly: "price_1SCFZS48rdWD5n1ODDiKPiY8", priceIdAnnual: "price_1SCFZS48rdWD5n1ODDiKPiY8",
+      name: "Starter", description: "Perfecto para equipos pequeños", monthlyPrice: 19, annualPrice: 182.4,
+      priceIdMonthly: "price_1SFvAXKaCjM8mKvqEAiySg2p", priceIdAnnual: "price_1SFvEZKaCjM8mKvqZnWRlv8V",
       features: ["Hasta 3 agentes", "2 canales (Web chat + Email)", "Automatizaciones básicas", "Reportes estándar", "Soporte por email"],
       limitations: ["Sin IA avanzada", "Sin integraciones premium"], popular: false,
     },
     {
-      name: "Growth", description: "Para equipos en crecimiento", monthlyPrice: 39, annualPrice: 39,
-      priceIdMonthly: "price_1SCFTa48rdWD5n1O0y8NHoUL", priceIdAnnual: "price_1SCFTa48rdWD5n1O0y8NHoUL",
+      name: "Growth", description: "Para equipos en crecimiento", monthlyPrice: 39, annualPrice: 374.4,
+      priceIdMonthly: "price_1SFvHgKaCjM8mKvq7l5yy7cB", priceIdAnnual: "price_1SFvJsKaCjM8mKvqQKupwJE6",
       features: ["Hasta 10 agentes", "Todos los canales", "IA y automatizaciones avanzadas", "Analytics completo", "Integraciones ilimitadas", "Soporte prioritario"],
       limitations: [], popular: true,
     },
     {
-      name: "Scale", description: "Para empresas grandes", monthlyPrice: 99, annualPrice: 99,
-      priceIdMonthly: "price_1SCFa048rdWD5n1OMUWPd514", priceIdAnnual: "price_1SCFa048rdWD5n1OMUWPd514",
+      name: "Scale", description: "Para empresas grandes", monthlyPrice: 99, annualPrice: 950.4,
+      priceIdMonthly: "price_1SFvLjKaCjM8mKvqHaRPtpkT", priceIdAnnual: "price_1SFvNfKaCjM8mKvq4mrAGnMo",
       features: ["Agentes ilimitados", "Todos los canales + custom", "IA personalizada", "Reportes avanzados", "White-label disponible", "Soporte dedicado", "SLA garantizado"],
       limitations: [], popular: false,
     },
@@ -97,7 +101,7 @@ const Pricing = () => {
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Badge className="bg-gradient-brand text-white">
-                      Most Popular
+                      Más Popular
                     </Badge>
                   </div>
                 )}

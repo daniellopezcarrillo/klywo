@@ -30,7 +30,7 @@ serve(async (req) => {
     });
   }
 
-  const { userId, priceId } = await req.json();
+  const { userId, priceId, name, email, phone, address } = await req.json();
 
   if (!userId || !priceId) {
     return new Response(JSON.stringify({ error: "User ID and Price ID are required" }), {
@@ -40,23 +40,46 @@ serve(async (req) => {
   }
 
   try {
-    const { data: userSubscription, error: fetchError } = await supabase
+    let customerId;
+
+    // 1. Get or Create Customer - Logic corrected to use user_subscriptions table
+    const { data: existingSubscription } = await supabase
       .from("user_subscriptions")
       .select("stripe_customer_id")
       .eq("user_id", userId)
       .single();
 
-    if (fetchError || !userSubscription || !userSubscription.stripe_customer_id) {
-      console.error("Stripe customer not found for user:", userId, fetchError);
-      return new Response(JSON.stringify({ error: "Stripe customer not found for user." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (existingSubscription && existingSubscription.stripe_customer_id) {
+      customerId = existingSubscription.stripe_customer_id;
+      await stripe.customers.update(customerId, { name, email, phone, address: { line1: address } });
+    } else {
+      const customers = await stripe.customers.list({ email: email, limit: 1 });
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+      } else {
+        const newCustomer = await stripe.customers.create({
+          name,
+          email,
+          phone,
+          address: { line1: address },
+          metadata: { supabase_user_id: userId },
+        });
+        customerId = newCustomer.id;
+      }
     }
-    
-    const customerId = userSubscription.stripe_customer_id;
 
-    // Create a subscription in Stripe
+    // 2. Update profiles table (with correct columns)
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .upsert({ 
+        id: userId, 
+        full_name: name, 
+        phone_number: phone
+      }, { onConflict: 'id' });
+
+    if (profileError) throw profileError;
+
+    // 3. Create Stripe Subscription
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
       items: [{ price: priceId }],
@@ -65,22 +88,23 @@ serve(async (req) => {
       expand: ['latest_invoice.payment_intent'],
     });
 
-    const { error: updateError } = await supabase
+    // 4. Update user_subscriptions table (with all correct data)
+    const { error: subscriptionError } = await supabase
       .from("user_subscriptions")
       .upsert({
         user_id: userId,
+        stripe_customer_id: customerId,
+        stripe_subscription_id: subscription.id,
         plan_id: priceId,
         subscription_status: subscription.status,
-        stripe_subscription_id: subscription.id,
+        current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
 
-    if (updateError) {
-      console.error("Database error updating subscription details:", updateError);
-      throw updateError;
-    }
+    if (subscriptionError) throw subscriptionError;
 
-    // Check if the expanded object and client_secret exist
+    // 5. Return client secret
     const latestInvoice = subscription.latest_invoice;
     if (typeof latestInvoice === 'object' && latestInvoice !== null && 'payment_intent' in latestInvoice) {
       const paymentIntent = latestInvoice.payment_intent;

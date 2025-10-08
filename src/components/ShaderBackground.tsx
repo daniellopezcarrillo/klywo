@@ -52,17 +52,22 @@ const ShaderBackground: React.FC = () => {
       }
       void main() {
         vec2 uv = gl_FragCoord.xy / iResolution.xy;
-        uv.x *= 1.5;
-        uv.x -= 0.25;
+        float aspect = iResolution.x / iResolution.y;
+        uv.x *= aspect; // Ajustar el ancho para mantener la relación de aspecto
+        uv -= 0.5 * vec2(aspect, 1.0); // Centrar el origen en (0,0)
+        
         vec3 color = vec3(0.0);
         float radius = 0.35;
-        vec2 center = vec2(0.5);
+        vec2 center = vec2(0.0); // El centro ya está en (0,0) debido al ajuste de uv
+        
         color += paintCircle(uv, center, radius, 0.035);
         color += paintCircle(uv, center, radius - 0.018, 0.01);
         color += paintCircle(uv, center, radius + 0.018, 0.005);
+        
         vec2 v = rotate2d(iTime) * uv;
-        color *= vec3(v.x, v.y, 0.7-v.y*v.x);
+        color *= vec3(v.x, v.y, 0.7 - v.y * v.x);
         color += paintCircle(uv, center, radius, 0.003);
+        
         gl_FragColor = vec4(color, 1.0);
       }
     `;

@@ -2,7 +2,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, PlayCircle } from "lucide-react";
 import ShaderBackground from "./ShaderBackground";
 
-const Hero = () => {
+interface HeroProps {
+  onStartFreeTrial: () => void;
+}
+
+const Hero = ({ onStartFreeTrial }: HeroProps) => {
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
       {/* Background */}
@@ -35,8 +39,8 @@ const Hero = () => {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Button size="lg" className="text-base px-8 py-6 shadow-brand">
-              Start Free Trial
+            <Button size="lg" className="text-base px-8 py-6 shadow-brand" onClick={onStartFreeTrial}>
+              Prueba Gratis
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <Button
@@ -45,7 +49,7 @@ const Hero = () => {
               className="text-base px-8 py-6 border-2 border-white/70 text-white hover:bg-white/30 bg-black/30"
             >
               <PlayCircle className="mr-2 h-5 w-5 text-white" />
-              <span className="text-white">Watch Demo</span>
+              <span className="text-white">Ver Demo</span>
             </Button>
           </div>
 

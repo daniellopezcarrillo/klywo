@@ -23,3 +23,5 @@ This document outlines the completed tasks and the tasks that are yet to be done
   - Registration page
 - **Payment-First Workflow**: Implement a workflow where the user account is created *after* a successful payment.
 - **Webhook Integration**: Upon successful account creation (after payment), send the user data to a specified webhook URL. This will be used to grant access to the application.
+
+**TAREAS HAN SIDO COMPLETADAS**:EYA FUERON COMPLETADAS

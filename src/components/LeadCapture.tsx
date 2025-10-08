@@ -13,7 +13,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const LeadCapture = () => {
+interface LeadCaptureProps {
+  formType?: 'demo' | 'free_trial';
+}
+
+const LeadCapture = ({ formType = 'demo' }: LeadCaptureProps) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -27,19 +31,24 @@ const LeadCapture = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const payload = {
+      ...formData,
+      plan: formType === 'free_trial' ? 'free' : 'demo_request',
+    };
+
     try {
-      const response = await fetch("https://webhook.ainnovaoficial.com/webhook/4802c6c9-c167-4163-bf6e-4d145ddb114e", {
+      const response = await fetch("https://webhook.ainnovaoficial.com/webhook/nuevocuenta", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         toast({
-          title: "¡Demo solicitada!",
-          description: "Nos pondremos en contacto contigo en las próximas 24 horas.",
+          title: formType === 'free_trial' ? "¡Registro para prueba gratuita enviado!" : "¡Demo solicitada!",
+          description: "Gracias por tu interés. Nos pondremos en contacto contigo pronto.",
         });
         setFormData({ name: "", email: "", company: "", teamSize: "" });
       } else {
@@ -48,7 +57,7 @@ const LeadCapture = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Hubo un problema al solicitar la demo. Por favor, inténtalo de nuevo.",
+        description: "Hubo un problema al enviar tu solicitud. Por favor, inténtalo de nuevo.",
         variant: "destructive",
       });
     } finally {
@@ -100,7 +109,7 @@ const LeadCapture = () => {
           <Card className="shadow-brand">
             <CardHeader>
               <CardTitle className="text-2xl text-center">
-                Solicita tu demo gratuita
+                {formType === 'free_trial' ? 'Comienza tu Prueba Gratuita' : 'Solicita tu demo gratuita'}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -165,7 +174,7 @@ const LeadCapture = () => {
                   className="w-full"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Enviando..." : "Solicitar Demo"}
+                  {isSubmitting ? "Enviando..." : (formType === 'free_trial' ? 'Comenzar Prueba' : 'Solicitar Demo')}
                   {!isSubmitting && <ArrowRight className="ml-2 h-5 w-5" />}
                 </Button>
 

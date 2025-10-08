@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, ArrowRight, Star } from "lucide-react";
+import klywoLogo from "@/assets/logo.png";
 import AuthTransition from './AuthTransition';
 
 const AuthForm = () => {
@@ -123,9 +124,9 @@ const AuthForm = () => {
 
       <Card className="w-full max-w-md mx-auto shadow-lg border-border relative z-10">
         <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-2xl font-bold bg-gradient-brand bg-clip-text text-transparent">
-            Únete a Klywo
-          </CardTitle>
+          <div className="flex justify-center mb-4">
+            <img src={klywoLogo} alt="Klywo" className="h-16 w-auto" />
+          </div>
           
           {/* Mensaje contextual si viene de un plan específico */}
           {planName && (

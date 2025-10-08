@@ -1,5 +1,6 @@
 import AuthDualForm from "@/components/AuthDualForm";
 import { CheckCircle, Shield, Zap, Users } from "lucide-react";
+import klywoLogo from "@/assets/logo.png";
 import '../styles/auth-flow.css';
 
 const AuthPage = () => {
@@ -30,12 +31,9 @@ const AuthPage = () => {
           <div className="hidden lg:block space-y-8">
             {/* Logo y branding */}
             <div className="text-center space-y-4">
-              <div className="w-20 h-20 bg-gradient-brand rounded-2xl mx-auto flex items-center justify-center shadow-lg">
-                <div className="text-white text-2xl font-bold">K</div>
+              <div className="mx-auto flex items-center justify-center shadow-lg">
+                <img src={klywoLogo} alt="Klywo" className="h-16 w-auto" />
               </div>
-              <h1 className="text-4xl font-bold bg-gradient-brand bg-clip-text text-transparent">
-                Klywo
-              </h1>
               <p className="text-xl text-muted-foreground">
                 La plataforma definitiva para gestionar todos tus chats
               </p>

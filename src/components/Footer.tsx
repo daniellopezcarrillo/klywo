@@ -1,46 +1,45 @@
 import { Separator } from "@/components/ui/separator";
-import klywoIcon from "@/assets/klywo-icon.png";
+import klywoLogo from "@/assets/logo.png";
 
 const Footer = () => {
   const links = {
     product: [
-      { name: "Features", href: "#features" },
-      { name: "Pricing", href: "#pricing" },
-      { name: "Integrations", href: "#integrations" },
-      { name: "API Docs", href: "#" },
+      { name: "Características", href: "#features" },
+      { name: "Precios", href: "#pricing" },
+      { name: "Integraciones", href: "#integrations" },
+      { name: "Documentación API", href: "#" },
     ],
     company: [
-      { name: "About", href: "#" },
+      { name: "Nosotros", href: "#" },
       { name: "Blog", href: "#" },
-      { name: "Careers", href: "#" },
-      { name: "Contact", href: "#contact" },
+      { name: "Empleo", href: "#" },
+      { name: "Contacto", href: "#contact" },
     ],
     resources: [
-      { name: "Documentation", href: "#" },
-      { name: "Help Center", href: "#" },
-      { name: "Community", href: "#" },
-      { name: "Status", href: "#" },
+      { name: "Documentación", href: "#" },
+      { name: "Centro de Ayuda", href: "#" },
+      { name: "Comunidad", href: "#" },
+      { name: "Estado", href: "#" },
     ],
     legal: [
-      { name: "Privacy Policy", href: "#" },
-      { name: "Terms of Service", href: "#" },
-      { name: "Security", href: "#" },
-      { name: "Compliance", href: "#" },
+      { name: "Política de Privacidad", href: "#" },
+      { name: "Términos de Servicio", href: "#" },
+      { name: "Seguridad", href: "#" },
+      { name: "Cumplimiento", href: "#" },
     ],
   };
 
   return (
-    <footer className="relative bg-transparent pt-16">
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/50 to-transparent z-0" />
+    <footer className="relative bg-gradient-to-b from-gray-50 to-white pt-16">
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white to-transparent z-0" />
       <div className="relative z-10 container py-16">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-8">
-          {/* Brand */}
-          <div className="col-span-2">
-            <div className="flex items-center space-x-3 mb-4">
-              <img src={klywoIcon} alt="Klywo" className="h-8 w-8" />
-              <span className="text-2xl font-bold text-black">KLYWO</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
+          {/* Brand con Logo Completo */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center mb-4 transition-transform duration-300 hover:scale-105">
+              <img src={klywoLogo} alt="Klywo" className="h-12 w-auto" />
             </div>
-            <p className="text-black/90 mb-6 max-w-sm">
+            <p className="text-gray-700 mb-6 max-w-sm leading-relaxed">
               Conversaciones que venden. Plataforma omnicanal con IA
               para transformar tu atención al cliente.
             </p>
@@ -48,15 +47,16 @@ const Footer = () => {
 
           {/* Product */}
           <div>
-            <h3 className="font-semibold text-black mb-4">Producto</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">Producto</h3>
             <ul className="space-y-3">
               {links.product.map((link) => (
                 <li key={link.name}>
                   <a
                     href={link.href}
-                    className="text-sm text-black/90 hover:text-black transition-colors"
+                    className="text-sm text-gray-700 hover:text-brand-primary transition-all duration-300 hover:translate-x-1 group relative"
                   >
                     {link.name}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-primary transition-all duration-300 group-hover:w-full"></span>
                   </a>
                 </li>
               ))}
@@ -65,15 +65,16 @@ const Footer = () => {
 
           {/* Company */}
           <div>
-            <h3 className="font-semibold text-black mb-4">Empresa</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">Empresa</h3>
             <ul className="space-y-3">
               {links.company.map((link) => (
                 <li key={link.name}>
                   <a
                     href={link.href}
-                    className="text-sm text-black/90 hover:text-black transition-colors"
+                    className="text-sm text-gray-700 hover:text-brand-primary transition-all duration-300 hover:translate-x-1 group relative"
                   >
                     {link.name}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-primary transition-all duration-300 group-hover:w-full"></span>
                   </a>
                 </li>
               ))}
@@ -82,15 +83,16 @@ const Footer = () => {
 
           {/* Resources */}
           <div>
-            <h3 className="font-semibold text-black mb-4">Recursos</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">Recursos</h3>
             <ul className="space-y-3">
               {links.resources.map((link) => (
                 <li key={link.name}>
                   <a
                     href={link.href}
-                    className="text-sm text-black/90 hover:text-black transition-colors"
+                    className="text-sm text-gray-700 hover:text-brand-primary transition-all duration-300 hover:translate-x-1 group relative"
                   >
                     {link.name}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-primary transition-all duration-300 group-hover:w-full"></span>
                   </a>
                 </li>
               ))}
@@ -99,15 +101,16 @@ const Footer = () => {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold text-black mb-4">Legal</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">Legal</h3>
             <ul className="space-y-3">
               {links.legal.map((link) => (
                 <li key={link.name}>
                   <a
                     href={link.href}
-                    className="text-sm text-black/90 hover:text-black transition-colors"
+                    className="text-sm text-gray-700 hover:text-brand-primary transition-all duration-300 hover:translate-x-1 group relative"
                   >
                     {link.name}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-primary transition-all duration-300 group-hover:w-full"></span>
                   </a>
                 </li>
               ))}
@@ -115,16 +118,16 @@ const Footer = () => {
           </div>
         </div>
 
-        <Separator className="my-8 bg-black/20" />
+        <Separator className="my-8 bg-gray-200" />
 
         <div className="flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-black/70">
+          <p className="text-sm text-gray-600 mb-4 md:mb-0">
             © 2024 Klywo. Todos los derechos reservados.
           </p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
+          <div className="flex space-x-6">
             <a
               href="#"
-              className="text-black/70 hover:text-black transition-colors"
+              className="text-gray-600 hover:text-brand-primary transition-all duration-300 hover:scale-110"
               aria-label="GitHub"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -133,7 +136,7 @@ const Footer = () => {
             </a>
             <a
               href="#"
-              className="text-black/70 hover:text-black transition-colors"
+              className="text-gray-600 hover:text-brand-primary transition-all duration-300 hover:scale-110"
               aria-label="Twitter"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -142,7 +145,7 @@ const Footer = () => {
             </a>
             <a
               href="#"
-              className="text-black/70 hover:text-black transition-colors"
+              className="text-gray-600 hover:text-brand-primary transition-all duration-300 hover:scale-110"
               aria-label="LinkedIn"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">

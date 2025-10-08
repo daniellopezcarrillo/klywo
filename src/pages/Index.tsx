@@ -8,10 +8,18 @@ import Testimonials from "@/components/Testimonials";
 import FAQ from "@/components/FAQ";
 import LeadCapture from "@/components/LeadCapture";
 import Footer from "@/components/Footer";
-// import AuthForm from "@/components/AuthForm"; // <--- Removed this import
 
 const Index = () => {
   const [animationsEnabled, setAnimationsEnabled] = useState(false);
+  const [formType, setFormType] = useState<'demo' | 'free_trial'>('demo');
+
+  const handleFormTrigger = (type: 'demo' | 'free_trial') => {
+    setFormType(type);
+    const demoElement = document.getElementById('demo');
+    if (demoElement) {
+      demoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
 
   useEffect(() => {
     // Check if user came from intro
@@ -30,16 +38,15 @@ const Index = () => {
 
   return (
     <div className={`min-h-screen bg-background ${animationsEnabled ? 'animate-fade-in' : 'opacity-0'}`}>
-      <Header />
+      <Header onFormTrigger={handleFormTrigger} />
       <main>
-        <Hero />
+        <Hero onStartFreeTrial={() => handleFormTrigger('free_trial')} />
         <Features />
         <Integrations />
-        <Pricing />
+        <Pricing onStartFreeTrial={() => handleFormTrigger('free_trial')} />
         <Testimonials />
         <FAQ />
-        <LeadCapture />
-        {/* <AuthForm /> */} {/* <--- Removed AuthForm rendering here */}
+        <LeadCapture formType={formType} />
       </main>
       <Footer />
     </div>
