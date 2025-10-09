@@ -24,10 +24,11 @@ const Header = ({ onFormTrigger }: HeaderProps) => {
   }, []);
 
   const navigation = [
-    { name: "Características", href: "#features" },
-    { name: "Precios", href: "#pricing" },
-    { name: "Documentación", href: "#docs" },
-    { name: "Contacto", href: "#contact" },
+    { name: "Inicio", href: "/landing" },
+    { name: "Características", href: "/features" },
+    { name: "Precios", href: "/landing#pricing" },
+    { name: "Documentación", href: "/landing#docs" },
+    { name: "Contacto", href: "/landing#contact" },
   ];
 
   return (
@@ -73,7 +74,7 @@ const Header = ({ onFormTrigger }: HeaderProps) => {
           </Button>
           <Button
             variant="default"
-            onClick={() => onFormTrigger('demo')}
+            onClick={() => onFormTrigger('free_trial')}
             className="bg-black text-white hover:bg-gray-800 transition-all duration-300 hover:shadow-lg hover:scale-105"
           >
             Solicitar Demo
@@ -131,7 +132,7 @@ const Header = ({ onFormTrigger }: HeaderProps) => {
                   </Button>
                   <Button
                     variant="default"
-                    onClick={() => { onFormTrigger('demo'); setIsMenuOpen(false); }}
+                    onClick={() => { onFormTrigger('free_trial'); setIsMenuOpen(false); }}
                     className="bg-brand-primary hover:bg-brand-primary-dark text-white transition-all duration-300 hover:shadow-lg w-full"
                   >
                     Solicitar Demo

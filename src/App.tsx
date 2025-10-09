@@ -9,6 +9,8 @@ import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 import PaymentPage from "./pages/PaymentPage";
 import PostPaymentInfo from "./pages/PostPaymentInfo";
+import FeaturesPage from "./pages/FeaturesPage";
+import PrivacyPolicy from "./pages/PrivacyPolicy"; // Import PrivacyPolicy
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js'; // Correct import
 
@@ -30,10 +32,10 @@ const App = () => (
             <Route path="/landing" element={<Index />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/payment" element={<PaymentPage />} />
-            <Route path="/post-payment-info" element={<PostPaymentInfo />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+            <Route path="/post-payment-info" element={<PostPaymentInfo />} />\            <Route path="/features" element={<FeaturesPage />} />\
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />\
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}             <Route path="*" element={<NotFound />} />
+Eso no importa Súbelo          </Routes>
         </BrowserRouter>
       </Elements>
     </TooltipProvider>

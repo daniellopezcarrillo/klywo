@@ -73,7 +73,7 @@ const LeadCapture = ({ formType = 'demo' }: LeadCaptureProps) => {
   ];
 
   return (
-    <section id="demo" className="py-24">
+    <section id="contact" className="py-24">
       <div className="container">
         <div className="grid lg:grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
           {/* Left side - Benefits */}

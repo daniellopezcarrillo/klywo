@@ -68,7 +68,6 @@ const Features = () => {
 
         <div className="relative overflow-hidden mb-24">
           <div className="flex animate-carousel-scroll">
-            {/* Duplicar los elementos para un scroll infinito */}
             {[...channels, ...channels].map((channel, index) => (
               <Card key={index} className="flex-shrink-0 w-[50%] sm:w-[33.33%] md:w-[25%] lg:w-[16.66%] text-center hover:shadow-soft transition-all duration-300 hover:-translate-y-1 mx-3">
                 <CardContent className="pt-6">

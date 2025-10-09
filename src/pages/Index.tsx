@@ -15,9 +15,9 @@ const Index = () => {
 
   const handleFormTrigger = (type: 'demo' | 'free_trial') => {
     setFormType(type);
-    const demoElement = document.getElementById('demo');
-    if (demoElement) {
-      demoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const contactElement = document.getElementById('contact');
+    if (contactElement) {
+      contactElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
 
@@ -41,7 +41,7 @@ const Index = () => {
       <Header onFormTrigger={handleFormTrigger} />
       <main>
         <Hero onStartFreeTrial={() => handleFormTrigger('free_trial')} />
-        <Features />
+                <Features />
         <Integrations />
         <Pricing onStartFreeTrial={() => handleFormTrigger('free_trial')} />
         <Testimonials />

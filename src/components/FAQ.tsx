@@ -30,7 +30,7 @@ const FAQ = () => {
   ];
 
   return (
-    <section className="py-24 bg-gradient-surface">
+    <section id="docs" className="py-24 bg-gradient-surface">
       <div className="container">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">

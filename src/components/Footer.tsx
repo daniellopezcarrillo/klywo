@@ -22,7 +22,7 @@ const Footer = () => {
       { name: "Estado", href: "#" },
     ],
     legal: [
-      { name: "Política de Privacidad", href: "#" },
+      { name: "Política de Privacidad", href: "/privacy-policy" },
       { name: "Términos de Servicio", href: "#" },
       { name: "Seguridad", href: "#" },
       { name: "Cumplimiento", href: "#" },
