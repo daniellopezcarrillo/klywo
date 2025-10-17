@@ -1,81 +1,89 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import Stripe from "https://esm.sh/stripe@14.x";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import Stripe from "https://esm.sh/stripe@11.1.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
-const supabaseUrl = Deno.env.get("SUPABASE_URL");
-const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
-const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
-const stripeWebhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-
-if (!supabaseUrl || !supabaseAnonKey || !stripeSecretKey || !stripeWebhookSecret) {
-  throw new Error("Missing required environment variables.");
-}
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: "2023-10-01",
+// These secrets are stored in Supabase environment variables
+const stripe = new Stripe(Deno.env.get("STRIPE_API_KEY") as string, {
+  apiVersion: "2023-10-16",
+  httpClient: Stripe.createFetchHttpClient(),
 });
 
-serve(async (req) => {
-  if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
-  }
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  // The service role key has full access to your database
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+);
 
-  const signature = req.headers.get("stripe-signature");
+const cryptoProvider = Stripe.createSubtleCryptoProvider();
+
+serve(async (req) => {
+  const signature = req.headers.get("Stripe-Signature");
   const body = await req.text();
 
-  if (!signature) {
-    return new Response(JSON.stringify({ error: "Stripe signature is required" }), { status: 400 });
-  }
-
-  let event;
+  let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, signature, stripeWebhookSecret);
+    event = await stripe.webhooks.constructEventAsync(
+      body,
+      signature!,
+      Deno.env.get("STRIPE_WEBHOOK_SIGNING_SECRET")!,
+      undefined,
+      cryptoProvider
+    );
   } catch (err) {
-    console.error(`Webhook signature verification failed: ${err.message}`);
-    return new Response(JSON.stringify({ error: "Webhook signature verification failed" }), { status: 400 });
+    console.error(err.message);
+    return new Response(err.message, { status: 400 });
   }
 
-  const subscription = event.data.object;
-  const customerId = subscription.customer;
+  console.log(`🔔 Received event: ${event.type}`);
 
-  const { data: userData, error: rpcError } = await supabase.rpc('get_user_id_from_stripe_customer', {
-    p_stripe_customer_id: customerId,
-  });
+  try {
+    const subscription = event.data.object as Stripe.Subscription;
+    const customer = await stripe.customers.retrieve(subscription.customer as string);
+    const user_id = (customer as Stripe.Customer).metadata.user_id;
 
-  if (rpcError || !userData || userData.length === 0) {
-    console.warn(`User not found for Stripe customer ID ${customerId}. Skipping webhook.`);
-    return new Response(JSON.stringify({ received: true }), { status: 200 });
-  }
-  
-  const userId = userData[0].user_id;
-
-  switch (event.type) {
-    case "customer.subscription.created":
-    case "customer.subscription.updated":
-    case "customer.subscription.deleted": {
-      const { error: updateError } = await supabase
-        .from("user_subscriptions")
-        .upsert({
-          user_id: userId,
-          stripe_customer_id: customerId,
-          stripe_subscription_id: subscription.id,
-          subscription_status: subscription.status,
-          plan_id: subscription.items.data[0]?.price?.id,
-          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
-
-      if (updateError) {
-        console.error("Error updating user subscription:", updateError);
-        return new Response(JSON.stringify({ error: "Failed to update subscription" }), { status: 500 });
-      }
-      break;
+    if (!user_id) {
+      const errorMessage = "user_id not found in customer metadata";
+      console.error(errorMessage);
+      // Return a 200 to prevent Stripe from retrying, as this is a permanent error for this event.
+      return new Response(JSON.stringify({ error: errorMessage }), { status: 200 });
     }
-    default:
-      console.log(`Unhandled event type ${event.type}`);
-  }
 
-  return new Response(JSON.stringify({ received: true }), { status: 200 });
+    switch (event.type) {
+      case "customer.subscription.created":
+      case "customer.subscription.updated":
+      case "customer.subscription.deleted": {
+        const { id, status, items } = subscription;
+        const price = items.data[0].price;
+
+        const { error } = await supabase
+          .from("subscriptions")
+          .upsert({
+            id: id,
+            user_id: user_id,
+            status: status,
+            price_id: price.id,
+          }, {
+            onConflict: 'id',
+          });
+
+        if (error) {
+          console.error("Supabase upsert error:", error);
+          throw error; // This will be caught by the outer catch block
+        }
+        
+        console.log(`Successfully processed subscription ${id} for user ${user_id}`);
+        break;
+      }
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
+    // Return a 200 response to acknowledge receipt of the event
+    return new Response(JSON.stringify({ received: true }), { status: 200 });
+
+  } catch (error) {
+    console.error("Error processing webhook:", error.message);
+    // Return a 500 error to indicate a server-side issue
+    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+  }
 });

@@ -7,7 +7,7 @@ const Footer = () => {
       { name: "Características", href: "#features" },
       { name: "Precios", href: "#pricing" },
       { name: "Integraciones", href: "#integrations" },
-      { name: "Documentación API", href: "#" },
+      { name: "Documentación API", href: "https://app.klywo.com/hc/guia/articles/1760651124-documentacion-klywo" },
     ],
     company: [
       { name: "Nosotros", href: "#" },
@@ -16,7 +16,7 @@ const Footer = () => {
       { name: "Contacto", href: "#contact" },
     ],
     resources: [
-      { name: "Documentación", href: "#" },
+      { name: "Documentación", href: "https://app.klywo.com/hc/guia/articles/1760651124-documentacion-klywo" },
       { name: "Centro de Ayuda", href: "#" },
       { name: "Comunidad", href: "#" },
       { name: "Estado", href: "#" },

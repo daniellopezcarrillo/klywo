@@ -9,6 +9,7 @@ import { CheckCircle, ArrowRight, Star, User, Mail, Lock, Building, Phone } from
 import SandglassTransition from './SandglassTransition';
 import { sendToWebhook, formatUserDataForWebhook } from '../services/webhookService';
 import '../styles/auth-flow.css';
+import { loadStripe } from '@stripe/stripe-js';
 
 const AuthDualForm = () => {
   const [mode, setMode] = useState<'register' | 'login'>('register');
@@ -25,6 +26,9 @@ const AuthDualForm = () => {
   const [searchParams] = useSearchParams();
   const priceId = searchParams.get('priceId');
   const planName = searchParams.get('plan');
+  const flow = searchParams.get('flow');
+  const [stripePromise] = useState(() => loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY));
+
 
   const handleSignUp = async () => {
     // Validar campos requeridos para registro
@@ -43,12 +47,17 @@ const AuthDualForm = () => {
     setError(null);
     
     try {
+      const isDemoFlow = flow === 'demo';
+      const redirectUrl = isDemoFlow
+        ? `${window.location.origin}/post-payment-info?flow=demo&planName=Demo&email=${encodeURIComponent(email)}`
+        : `${window.location.origin}/start-checkout?priceId=${priceId}&plan=${planName}`;
+
       // Intentar crear usuario en Supabase
       const { data, error: supabaseError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/payment?priceId=${priceId}&plan=${planName}`,
+          emailRedirectTo: redirectUrl,
           data: {
             full_name: fullName,
             company_name: companyName,
@@ -61,7 +70,11 @@ const AuthDualForm = () => {
         throw supabaseError;
       }
       
-      setMessage('¡Registro exitoso! Por favor, revisa tu correo para confirmar tu cuenta y poder continuar con el pago.');
+      const successMessage = isDemoFlow
+        ? '¡Registro exitoso! Por favor, revisa tu correo para confirmar tu cuenta y empezar tu prueba.'
+        : '¡Registro exitoso! Por favor, revisa tu correo para confirmar tu cuenta y poder continuar con el pago.';
+
+      setMessage(successMessage);
       console.log('User data:', data);
       
     } catch (err: any) {
@@ -91,57 +104,10 @@ const AuthDualForm = () => {
       
       if (error) throw error;
 
-      if (data.user) {
-        const { data: subscriptions, error: subscriptionError } = await supabase
-          .from('user_subscriptions')
-          .select('stripe_customer_id')
-          .eq('user_id', data.user.id);
-
-        if (subscriptionError) {
-          throw subscriptionError;
-        }
-
-        if (!subscriptions || subscriptions.length === 0 || !subscriptions[0].stripe_customer_id) {
-          // If not, create a new Stripe customer
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            const jwt = session.access_token;
-            const createStripeCustomerResponse = await fetch('https://gvxljxkmlckefbbjenwq.supabase.co/functions/v1/createStripeCustomer', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${jwt}`,
-                'apiKey': import.meta.env.VITE_SUPABASE_ANON_KEY
-              },
-              body: JSON.stringify({ userId: data.user.id }),
-            });
-            const stripeCustomer = await createStripeCustomerResponse.json();
-            console.log('Stripe customer created:', stripeCustomer);
-            console.log('Subscription object after creating customer:', await supabase.from('user_subscriptions').select('*').eq('user_id', data.user.id).single());
-          }
-        }
-      }
-
       // On success:
       setMessage('¡Inicio de sesión exitoso!');
       console.log('Sign in data:', data);
       setShowTransition(true); // Show transition only on success
-
-      // Formatear datos para el webhook (login)
-      const userData = await formatUserDataForWebhook(
-        { email, password },
-        planName || 'Login',
-        priceId || ''
-      );
-      
-      // Enviar datos al webhook
-      const webhookResponse = await sendToWebhook(userData);
-      
-      if (webhookResponse.success) {
-        console.log('Datos de login enviados al webhook exitosamente');
-      } else {
-        console.warn('Error al enviar datos de login al webhook:', webhookResponse.message);
-      }
       
     } catch (err: any) {
       setError(err.message);
@@ -151,12 +117,40 @@ const AuthDualForm = () => {
     }
   };
 
-  const handleTransitionComplete = () => {
-    // Redirigir directamente al formulario de pago
-    if (priceId) {
-      navigate(`/payment?priceId=${priceId}&plan=${planName}`);
-    } else {
-      navigate('/payment');
+  const handleTransitionComplete = async () => {
+    if (flow === 'demo') {
+      navigate('/post-payment-info', { state: { email: email, planName: 'Demo' } });
+      return;
+    }
+  
+    if (!priceId) {
+      // If there is no priceId, maybe navigate to a dashboard or home page
+      navigate('/'); 
+      return;
+    }
+  
+    try {
+      setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('User not logged in');
+  
+      const response = await supabase.functions.invoke('create-checkout-session', {
+        body: JSON.stringify({ priceId, planName }),
+      });
+  
+      if (response.error) throw response.error;
+  
+      const { sessionId } = response.data;
+      const stripe = await stripePromise;
+      if (stripe) {
+        await stripe.redirectToCheckout({ sessionId });
+      } else {
+        throw new Error('Stripe.js has not loaded yet.');
+      }
+    } catch (err: any) {
+      setError(`Error al redirigir al pago: ${err.message}`);
+      console.error('Checkout redirection error:', err);
+      setLoading(false);
     }
   };
 

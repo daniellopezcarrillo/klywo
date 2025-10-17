@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
@@ -12,12 +13,17 @@ import Footer from "@/components/Footer";
 const Index = () => {
   const [animationsEnabled, setAnimationsEnabled] = useState(false);
   const [formType, setFormType] = useState<'demo' | 'free_trial'>('demo');
+  const navigate = useNavigate();
 
   const handleFormTrigger = (type: 'demo' | 'free_trial') => {
-    setFormType(type);
-    const contactElement = document.getElementById('contact');
-    if (contactElement) {
-      contactElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (type === 'free_trial') {
+      navigate('/auth?flow=demo');
+    } else {
+      setFormType(type);
+      const contactElement = document.getElementById('contact');
+      if (contactElement) {
+        contactElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
   };
 
