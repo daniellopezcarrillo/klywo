@@ -5,10 +5,10 @@ version: '3.8'
 services:
   # Service for your web application
   klywo-sparkle-web:
-    # The image will be built from the Dockerfile in the same directory
-    build: .
-    # You can optionally give the image a name for local management
-    image: klywo-sparkle-launch:latest
+    # Use the image from GitHub Container Registry
+    image: ghcr.io/daniellopezcarrillo/klywo-sparkle-launch:latest
+    # Build locally for development/testing (uncomment for local builds)
+    # build: .
     
     # Connect the service to your main external network
     networks:
