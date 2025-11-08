@@ -1,51 +1,32 @@
 # Stage 1: Build the application
 FROM oven/bun:1.0-alpine AS builder
 
-# Set the working directory
 WORKDIR /app
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
-
-# Copy package.json and bun.lockb to leverage Docker cache
+# Copy package files and install dependencies
 COPY package.json bun.lockb ./
-
-# Install dependencies
 RUN bun install --frozen-lockfile
 
-# Copy the rest of the application source code
+# Copy the rest of the source code and build the application
 COPY . .
-
-# Build the application for production
 RUN bun run build
 
-# Stage 2: Serve the application with Nginx
-FROM nginx:alpine
+# Stage 2: Serve the application with a lean and secure Nginx setup
+FROM nginx:1.25-alpine
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001 && \
-    chown -R nextjs:nodejs /usr/share/nginx/html && \
-    chown -R nextjs:nodejs /var/cache/nginx && \
-    chown -R nextjs:nodejs /var/log/nginx && \
-    chown -R nextjs:nodejs /etc/nginx/conf.d
-
-# Switch to non-root user
-USER nextjs
-
-# Copy the built assets from the builder stage
+# Copy the built static files from the builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy the custom Nginx configuration
-COPY --chown=nextjs:nodejs nginx.conf /etc/nginx/conf.d/default.conf
+# Copy your custom Nginx configuration
+# This will replace the default server configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
+# Expose port 80 for Traefik to connect to
 EXPOSE 80
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:80/ || exit 1
+# Health check to ensure Nginx is running and serving content
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -q -O /dev/null http://localhost/ || exit 1
 
-# Start Nginx
+# Command to run Nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]
