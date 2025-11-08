@@ -38,5 +38,42 @@ Portainer no puede acceder a la imagen `ghcr.io/daniellopezcarrillo/klywo-sparkl
 ### Paso 4: Verificar despliegue
 Las réplicas deberían cambiar de 0/1 a 1/1 cuando la imagen se descargue correctamente.
 
-## Alternativa: Construir localmente en Portainer
-Si prefieres no usar tokens, puedes cambiar el docker-compose.yml para que use `build: .` en lugar de la imagen de GHCR.
+## Solución Definitiva: Construir localmente en Portainer
+
+**Recomendado**: Dado que el acceso a GHCR puede ser problemático en Portainer, la solución más confiable es construir la imagen localmente.
+
+### Pasos para construir localmente:
+
+1. **Edita tu stack en Portainer:**
+   - Ve a tu stack "klywo-sparkle-web"
+   - Haz clic en "Edit stack"
+
+2. **Cambia la configuración del servicio:**
+   - En la sección "Services", asegúrate de que esté configurado como:
+     ```yaml
+     klywo-sparkle-web:
+       build: .
+       image: klywo-sparkle-launch:latest
+     ```
+
+3. **Guarda y actualiza el stack:**
+   - Portainer construirá la imagen automáticamente usando tu Dockerfile
+   - Las réplicas deberían cambiar a 1/1 cuando termine
+
+### Ventajas de construir localmente:
+- ✅ No requiere tokens de autenticación
+- ✅ Construcción optimizada con cache de capas
+- ✅ Control total sobre el proceso de build
+- ✅ Acceso a todos los archivos y dependencias locales
+
+### Flujo de trabajo recomendado:
+1. **Desarrollo local**: Haz cambios y haz `git push`
+2. **GitHub Actions**: Construye y sube a GHCR (para respaldo)
+3. **Despliegue en Portainer**: Construye localmente usando `build: .`
+
+### Si aún así quieres usar GHCR:
+Si prefieres usar la imagen remota después de configurar el PAT, puedes cambiar temporalmente a:
+```yaml
+image: ghcr.io/daniellopezcarrillo/klywo-sparkle-launch:latest
+```
+Pero la construcción local es más confiable para producción.
