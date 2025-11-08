@@ -49,6 +49,41 @@ serve(async (req) => {
     }
 
     switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const customer = await stripe.customers.retrieve(session.customer as string);
+        const user_id = (customer as Stripe.Customer).metadata.user_id;
+
+        if (!user_id) {
+          const errorMessage = "user_id not found in customer metadata for checkout session";
+          console.error(errorMessage, session.id);
+          // Return 200 to prevent retries for this permanent error.
+          return new Response(JSON.stringify({ error: errorMessage }), { status: 200 });
+        }
+
+        const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+        const { id, status, items } = subscription;
+        const price = items.data[0].price;
+
+        const { error } = await supabase
+          .from("subscriptions")
+          .upsert({
+            id: id,
+            user_id: user_id,
+            status: status,
+            price_id: price.id,
+          }, {
+            onConflict: 'id',
+          });
+
+        if (error) {
+          console.error("Supabase upsert error on checkout.session.completed:", error);
+          throw error;
+        }
+
+        console.log(`Successfully processed checkout session for user ${user_id}`);
+        break;
+      }
       case "customer.subscription.created":
       case "customer.subscription.updated":
       case "customer.subscription.deleted": {

@@ -84,6 +84,7 @@ serve(async (req) => {
         quantity: 1,
       }],
       mode: 'subscription',
+      allow_promotion_codes: true,
       success_url: `${origin}/post-payment-info?status=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/`,
       metadata: {

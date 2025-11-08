@@ -8,24 +8,36 @@ import {
 const FAQ = () => {
   const faqs = [
     {
-      question: "¿Puedo exportar mis datos si decido cambiar de plataforma?",
-      answer: "Absolutamente. Proporcionamos exportación completa de datos en formatos estándar (JSON, CSV, XML). No hay lock-in de vendor - tus datos son tuyos. También ofrecemos APIs para sincronización en tiempo real con otras plataformas.",
+      question: "Si adquiero un plan anual, ¿qué beneficios exclusivos obtengo?",
+      answer: "Además de un 20% de descuento, el plan anual aumenta significativamente el número de agentes incluidos. En el plan Scale anual, recibes servicios de alto valor como la implementación de un Agente IA Multicanal, 4 asesorías estratégicas al año y la creación de una landing page personalizada para tu negocio.",
     },
     {
-      question: "¿Qué canales de comunicación soportan?",
-      answer: "Soportamos todos los canales principales: Web chat, Email, WhatsApp Business, Instagram DM, Facebook Messenger, Telegram, Line, SMS, y llamadas telefónicas. También ofrecemos APIs para canales personalizados.",
+      question: "Necesito más agentes de los que ofrece mi plan, ¿qué hago?",
+      answer: "Nuestro modelo está diseñado para crecer contigo. Si excedes el límite de agentes de tu plan (ej. más de 6 en Growth Anual), simplemente necesitas pasar al siguiente plan, Scale, para ampliar tu capacidad. Esto mantiene los costos predecibles.",
     },
     {
-      question: "¿Hay límites en el uso de IA y automatizaciones?",
-      answer: "En el plan Starter hay límites básicos. Los planes Growth y Scale incluyen IA y automatizaciones ilimitadas. También puedes usar tu propia API key de OpenAI para control total de costos y uso.",
+      question: "¿Cuál es la diferencia entre la funcionalidad de WhatsApp Limitada y Completa?",
+      answer: "La funcionalidad Limitada del plan Starter te permite conectar una línea de WhatsApp para comunicación básica. La funcionalidad Completa en los planes Growth y Scale desbloquea todo el potencial, incluyendo automatizaciones avanzadas, campañas y una integración más profunda.",
     },
     {
-      question: "¿Qué SLA ofrecen y qué soporte incluye?",
-      answer: "Ofrecemos 99.9% uptime SLA en todos los planes pagos. El soporte incluye: email (todos los planes), chat prioritario (Growth+), y soporte dedicado con SLA de respuesta garantizado (Scale). También proporcionamos formación gratuita para equipos.",
+      question: "¿Qué límites de IA tiene cada plan?",
+      answer: "Nuestro asistente Captain AI tiene los siguientes límites de respuestas generadas al mes: Plan Starter: 250 respuestas. Plan Growth: 600 respuestas. Plan Scale: Respuestas ILIMITADAS. Si alcanzas tu límite, la IA se detendrá hasta el siguiente ciclo de facturación.",
     },
     {
-      question: "¿Puedo integrar con mi CRM y herramientas existentes?",
-      answer: "Sí, ofrecemos integraciones nativas con los CRMs principales (Salesforce, HubSpot, Pipedrive) y conectores para herramientas como Slack, Teams, Zapier, y Make. También proporcionamos webhooks y APIs REST completas para integraciones personalizadas.",
+      question: '¿En qué consiste el "Servicio de Agente IA Personalizado" del plan Scale?',
+      answer: "Es un servicio premium donde nuestro equipo implementa un agente de IA avanzado (vía n8n) para un canal. Este agente puede realizar tareas complejas como agendar citas, consultar bases de datos o ejecutar flujos de trabajo a medida. En el plan anual, este agente se implementa en múltiples canales.",
+    },
+    {
+      question: "¿Puedo cambiar de plan en cualquier momento?",
+      answer: "Sí, puedes mejorar, degradar o cancelar tu plan en cualquier momento directamente desde tu panel de administración. Los cambios se aplicarán en el siguiente ciclo de facturación.",
+    },
+    {
+      question: "¿Qué es el Kanban de Clientes (Beta) del plan Growth?",
+      answer: "Es una vista de seguimiento visual que te permite organizar y gestionar a tus clientes como si fueran tareas en un tablero Kanban. Facilita el seguimiento de cada cliente a través de las diferentes etapas de tu proceso de venta o soporte.",
+    },
+    {
+      question: "¿Puedo integrar KLYWO con mis herramientas actuales?",
+      answer: "Sí. Todos los planes permiten integraciones básicas. Los planes Growth y Scale ofrecen integraciones más avanzadas, y el plan Scale te da acceso completo a la API para construir cualquier conexión a medida que necesites.",
     },
   ];
 

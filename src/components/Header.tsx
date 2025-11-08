@@ -27,7 +27,7 @@ const Header = ({ onFormTrigger }: HeaderProps) => {
     { name: "Inicio", href: "/landing" },
     { name: "Características", href: "/features" },
     { name: "Precios", href: "/landing#pricing" },
-    { name: "Documentación", href: "https://app.klywo.com/hc/guia/articles/1760651124-documentacion-klywo" },
+    { name: "Documentación", href: "https://app.klywo.com/hc/guia/es" },
     { name: "Contacto", href: "/landing#contact" },
   ];
 
