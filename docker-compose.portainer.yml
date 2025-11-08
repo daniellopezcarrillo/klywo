@@ -1,0 +1,54 @@
+version: '3.8'
+
+# docker-compose.yml para Portainer Stack Deployment con GHCR
+# Versión con autenticación para acceso a GitHub Container Registry
+
+services:
+  # Service for your web application
+  klywo-sparkle-web:
+    # Use the image from GitHub Container Registry
+    # NOTA: Portainer necesita acceso autenticado a GHCR
+    image: ghcr.io/daniellopezcarrillo/klywo-sparkle-launch:latest
+    
+    # Opción: Construir localmente si no hay acceso a GHCR
+    # build: .
+    
+    # Connect the service to your main external network
+    networks:
+      - red_ainnova
+      
+    # --- Traefik & Docker Swarm Configuration ---
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      
+      # Labels for Traefik to manage routing and SSL
+      labels:
+        # 1. Enable Traefik for this service
+        - "traefik.enable=true"
+
+        # 2. Define the hostname for your site
+        - "traefik.http.routers.klywo-sparkle.rule=Host(`klywo.com`)"
+
+        # 3. Use the 'websecure' entrypoint (HTTPS)
+        - "traefik.http.routers.klywo-sparkle.entrypoints=websecure"
+
+        # 4. Assign the Let's Encrypt resolver for SSL certificate generation
+        - "traefik.http.routers.klywo-sparkle.tls.certresolver=letsencryptresolver"
+
+        # 5. Specify the internal port of the container (Nginx default is 80)
+        - "traefik.http.services.klywo-sparkle.loadbalancer.server.port=80"
+
+        # 6. Ensure Traefik uses the correct Docker network to communicate
+        - "traefik.docker.network=red_ainnova"
+
+# --- Network Configuration ---
+networks:
+  # Define the existing external network
+  red_ainnova:
+    external: true
+    name: red_ainnova
