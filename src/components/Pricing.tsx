@@ -20,8 +20,8 @@ const Pricing = ({ onStartFreeTrial }: PricingProps) => {
     {
       name: "Starter",
       description: "Ideal para equipos pequeños y startups que necesitan una solución de comunicación profesional para empezar.",
-      monthlyPrice: 19,
-      annualPrice: 182.40,
+      monthlyPrice: 399,
+      annualPrice: 3830.40,
       priceIdMonthly: "price_1SFvAXKaCjM8mKvqEAiySg2p",
       priceIdAnnual: "price_1SFvEZKaCjM8mKvqZnWRlv8V",
       features: [
@@ -29,7 +29,7 @@ const Pricing = ({ onStartFreeTrial }: PricingProps) => {
         "Hasta 6 agentes (Plan Anual)",
         "Captain AI: 250 respuestas/mes",
         "Agent Bots (Flujos)",
-        "Canales: Web, Email, Facebook",
+        "3 Canales: Web, Email, Facebook(beta),instagram,whatsapp QR,",
         "WhatsApp: 1 Línea (Limitado)",
         "Plataforma Completa klywo v4",
         "Reportes Estándar y Soporte por Email",
@@ -40,8 +40,8 @@ const Pricing = ({ onStartFreeTrial }: PricingProps) => {
     {
       name: "Growth",
       description: "Perfecto para empresas en crecimiento que buscan expandir su comunicación y automatizar procesos.",
-      monthlyPrice: 39,
-      annualPrice: 374.40,
+      monthlyPrice: 699,
+      annualPrice: 6710.40,
       priceIdMonthly: "price_1SFvHgKaCjM8mKvq7l5yy7cB",
       priceIdAnnual: "price_1SFvJsKaCjM8mKvqQKupwJE6",
       features: [
@@ -62,8 +62,8 @@ const Pricing = ({ onStartFreeTrial }: PricingProps) => {
     {
       name: "Scale",
       description: "Solución integral para grandes equipos que buscan un socio tecnológico para maximizar su eficiencia.",
-      monthlyPrice: 99,
-      annualPrice: 950.40,
+      monthlyPrice: 2000,
+      annualPrice: 19200,
       priceIdMonthly: "price_1SFvLjKaCjM8mKvqHaRPtpkT",
       priceIdAnnual: "price_1SFvNfKaCjM8mKvq4mrAGnMo",
       features: [
@@ -84,7 +84,7 @@ const Pricing = ({ onStartFreeTrial }: PricingProps) => {
 
   const formatPrice = (monthlyPrice: number, annualPrice: number) => {
     const price = isAnnual ? annualPrice : monthlyPrice;
-    return { price, period: isAnnual ? "/año" : "/mes" };
+    return { price, period: isAnnual ? " MXN /año" : " MXN /mes" };
   };
 
   const handleGetStarted = (planName: string, priceId: string) => {
