@@ -48,8 +48,7 @@ jobs:
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        no-cache: true
         build-args: |
           VITE_SUPABASE_URL=https://gvxljxkmlckefbbjenwq.supabase.co
           VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2eGxqeGttbGNrZWZiYmplbndxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMjkxMzEsImV4cCI6MjA2ODkwNTEzMX0.uC9pPr7gFUmiJ4_vITz18P0gUhxtVc1mrspqo0Y50Mg
